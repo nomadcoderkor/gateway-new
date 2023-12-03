@@ -1,0 +1,52 @@
+server:
+  port: 8000
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+
+spring:
+  application:
+    name: apigateway-service
+  cloud:
+    gateway:
+      default-filters:
+        - name: GlobalFilter
+          args:
+            baseMessage: HCMS API Gateway
+            preLogger: true
+            postLogger: true
+      routes:
+        - id: public-service
+          uri: http://localhost:5000
+          predicates:
+            - Path=/public/**
+
+        - id: hcms-service
+          uri: http://localhost:5000
+          predicates:
+            - Path=/hcms/**
+          filters:
+            - HcmsApiFilter
+#            - AddRequestHeader=hcms-request, hcms-requests-header2
+#            - AddResponseHeader=hcms-response, hcms-response-header2
+
+        - id: openapi-service
+          uri: http://localhost:6000
+          predicates:
+            - Path=/open-api/**
+          filters:
+            - OpenApiFilter
+            - name: LoggingFilter
+              args:
+                loggingMessage: OpenApi Gateway Logger
+                preLogger: true
+                postLogger: true
+
+#            - AddRequestHeader=open-api-request, open-api-request-header2
+#            - AddResponseHeader=open-api-response, open-api-response-header2
+
